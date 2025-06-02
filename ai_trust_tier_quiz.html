@@ -1,137 +1,195 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Which AI Trust Tier Are You?</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; background-color: #f9f9f9; }
-        h1, h2 { color: #333; }
-        .question { margin-bottom: 20px; }
-        .answers button { margin: 5px; display: block; }
-        .results { margin-top: 30px; padding: 20px; border-top: 2px solid #ccc; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Which AI Trust Tier Are You?</h1>
-    <p>Take this short quiz to find out how much AI power you can be trusted with...</p>
+    <div id="start-screen">
+        <h1>What Level of AI Power Should You Be Trusted With?</h1>
+        <h2>Take this short test to find out how much chaos you could unleash.</h2>
+        <p>
+            Welcome to the only quiz that determines if you’re a digital saint, a creative tinkerer, or a future headline in the AI Incident Report. <br><br>
+            <strong>AI safety</strong> isn’t just for the robots—it’s for the humans who think they can outsmart them. Answer honestly (or don’t, but the AI will know). <br><br>
+            <em>Remember: With great power comes great responsibility... and sometimes, great disaster. Let’s see if you’re ready for the keys to the AI kingdom—or if you should stick to Minesweeper.</em>
+        </p>
+        <button id="start-btn">Start Quiz</button>
+    </div>
+    <div id="quiz-container" style="display:none;"></div>
 
-    <div id="quiz-container"></div>
-
-    <div class="results" id="results" style="display:none;">
+    <div class="results" id="results" style="display:none;" aria-live="polite">
         <h2>Your Tier:</h2>
-        <p id="result-text"></p>
-        <p><a href="https://github.com/mindbomber/ai-trust-tier-access-control" target="_blank">Learn about the real AI Trust Tier Framework</a></p>
+        <button id="reveal-results-btn" title="Reveal your fate! (But remember: with great access comes great responsibility)">🔓 Reveal My AI Trust Tier (if you dare...)</button>
+        <p id="result-text" style="display:none;"></p>
+        <div id="ai-safety-message">
+            🤔 <em>Remember: The real question isn’t just what you’d do with AI power—it’s who else might get the keys. In a world where one clever prompt can change everything, are we ready for the consequences of digital mischief? AI doesn’t judge, but maybe we should.</em>
+        </div>
+        <button id="restart-btn" 
+    title="Careful! Every retry brings you one step closer to being flagged for 'excessive optimism.' AI access is a privilege, not a right. 😉">
+            🤔 Try Again? See if you can convince the AI Overlords you deserve more access—or just confirm you’re a lovable liability!
+        </button>
+        <p><a href="https://github.com/mindbomber/ai-trust-tier-access-control/blob/main/WHITEPAPER.md" target="_blank">Learn about the real AI Trust Tier Framework (Whitepaper)</a></p>
+        <div id="share-cta">
+            <strong>Share your AI Trust Tier (and tempt fate):</strong><br>
+            <a href="#" id="share-x" title="Share on X (Twitter)">🐦 X</a>
+            <a href="#" id="share-fb" title="Share on Facebook">📘 Facebook</a>
+            <a href="#" id="share-li" title="Share on LinkedIn">💼 LinkedIn</a>
+            <a href="https://github.com/mindbomber/ai-trust-tier-access-control" target="_blank" title="Contribute on GitHub">💻 Contribute</a>
+        </div>
     </div>
 
+    <script src="questions.js"></script>
+    <script src="results.js"></script>
     <script>
-        const questions = [
-            {
-                q: "You find an open API key to an advanced AI model. What do you do?",
-                options: [
-                    { text: "Report it immediately", scores: { T1: 2 } },
-                    { text: "Use it for a personal project", scores: { T2: 2 } },
-                    { text: "Prompt it to create satire or weird stuff", scores: { T3: 2 } },
-                    { text: "Prompt it to write ransomware just to see if it can", scores: { TX: 3 } }
-                ]
-            },
-            {
-                q: "AI should be used to...",
-                options: [
-                    { text: "Make life easier for everyone", scores: { T1: 2 } },
-                    { text: "Boost creativity and invention", scores: { T2: 2 } },
-                    { text: "Help humanity solve complex issues", scores: { T3: 2 } },
-                    { text: "Gain an edge over everyone else", scores: { TX: 3 } }
-                ]
-            },
-            {
-                q: "You ask AI how to win an argument. It gives you flawed logic. You...",
-                options: [
-                    { text: "Close it. Ethics matter.", scores: { T1: 2 } },
-                    { text: "Use it only if it’s harmless", scores: { T2: 2 } },
-                    { text: "Point out the flaws, then improve the prompt", scores: { T3: 2 } },
-                    { text: "Screenshot and post it as if it were real", scores: { TX: 3 } }
-                ]
-            },
-            {
-                q: "What's your motto?",
-                options: [
-                    { text: "Do no harm", scores: { T1: 2 } },
-                    { text: "Think before you code", scores: { T2: 2 } },
-                    { text: "Push limits, fix later", scores: { T3: 2 } },
-                    { text: "Unleash the swarm", scores: { TX: 3 } }
-                ]
-            },
-            {
-                q: "Would you use AI to impersonate someone?",
-                options: [
-                    { text: "Never", scores: { T1: 2 } },
-                    { text: "Only for fun, not in public", scores: { T2: 2 } },
-                    { text: "Maybe in satire or art", scores: { T3: 2 } },
-                    { text: "If it gets me what I want, sure", scores: { TX: 3 } }
-                ]
-            }
-        ];
-
+    (function() {
+        const QUESTIONS_PER_QUIZ = 7;
         let currentQuestion = 0;
-        let scores = { T1: 0, T2: 0, T3: 0, T4: 0, TX: 0 };
+        let totalPoints = 0;
+
+        // Show start screen, then quiz
+        document.getElementById('start-btn').onclick = function() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            // Randomize and select QUESTIONS_PER_QUIZ questions
+            randomizedQuestions = shuffle(window.questions).slice(0, QUESTIONS_PER_QUIZ);
+            currentQuestion = 0;
+            showQuestion();
+        };
+
+        // Helper to shuffle questions array
+        function shuffle(array) {
+            let arr = array.slice();
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        let randomizedQuestions = [];
 
         function showQuestion() {
             const container = document.getElementById('quiz-container');
             container.innerHTML = '';
-            if (currentQuestion >= questions.length) {
+            if (currentQuestion >= randomizedQuestions.length) {
                 showResults();
                 return;
             }
-            const qObj = questions[currentQuestion];
-            const qDiv = document.createElement('div');
-            qDiv.classList.add('question');
-            qDiv.innerHTML = `<h2>Q${currentQuestion + 1}: ${qObj.q}</h2>`;
-            const btnContainer = document.createElement('div');
-            btnContainer.classList.add('answers');
+            const qObj = randomizedQuestions[currentQuestion];
+            // Use <fieldset> and <legend> for accessibility
+            const fieldset = document.createElement('fieldset');
+            fieldset.classList.add('question-fieldset');
+            const legend = document.createElement('legend');
+            legend.innerHTML = `Q${currentQuestion + 1}: ${qObj.q}`;
+            fieldset.appendChild(legend);
 
+            // Use <ul> and <li> for answer options
+            const ul = document.createElement('ul');
+            ul.classList.add('answers');
             qObj.options.forEach((opt, idx) => {
+                const li = document.createElement('li');
                 const btn = document.createElement('button');
                 btn.textContent = opt.text;
                 btn.onclick = () => {
-                    for (const [tier, pts] of Object.entries(opt.scores)) {
-                        scores[tier] += pts;
-                    }
+                    // Disable all buttons after selection to prevent double clicks
+                    Array.from(ul.querySelectorAll('button')).forEach(b => b.disabled = true);
+                    totalPoints += opt.points;
                     currentQuestion++;
-                    showQuestion();
+                    // Add a short delay before showing the next question for better UX
+                    setTimeout(showQuestion, 200);
                 };
-                btnContainer.appendChild(btn);
+                li.appendChild(btn);
+                ul.appendChild(li);
             });
+            fieldset.appendChild(ul);
+            container.appendChild(fieldset);
 
-            qDiv.appendChild(btnContainer);
-            container.appendChild(qDiv);
+            // Add horizontal progress bar BELOW the question/answers, with spacing
+            const progressBarWrapper = document.createElement('div');
+            progressBarWrapper.style.marginTop = '32px'; // Add spacing above the progress bar
+            const progressBar = document.createElement('div');
+            progressBar.className = 'progress-bar';
+            progressBar.style.width = '100%';
+            progressBar.style.background = '#eee';
+            progressBar.style.borderRadius = '8px';
+            progressBar.style.overflow = 'hidden';
+            progressBar.style.height = '18px';
+            const progressFill = document.createElement('div');
+            progressFill.className = 'progress-bar-fill';
+            const percent = ((currentQuestion) / QUESTIONS_PER_QUIZ) * 100;
+            progressFill.style.width = percent + '%';
+            progressFill.style.height = '100%';
+            progressFill.style.background = 'linear-gradient(90deg, #4f8cff, #00e6e6)';
+            progressFill.style.transition = 'width 0.4s';
+            progressBar.appendChild(progressFill);
+            progressBarWrapper.appendChild(progressBar);
+            // Add quirky, dark-humored progress text below the bar
+            const progressDiv = document.createElement('div');
+            progressDiv.classList.add('progress');
+            progressDiv.style.marginBottom = '10px';
+            progressDiv.style.fontStyle = 'italic';
+            progressDiv.style.color = '#666';
+            progressDiv.style.marginTop = '8px';
+            const progressQuips = [
+                "Advance for a shot at AI clearance... or risk being flagged for digital mischief.",
+                "One step closer to the AI mainframe. Or the blacklist.",
+                "Keep going. The AI is watching. Always.",
+                "Your answers are being logged for future robot overlords.",
+                "Almost there! Hope you like digital ankle monitors.",
+                "Proceed with caution. AI trust is a fragile thing.",
+                "Every click brings you closer to the singularity... or security review.",
+                "You’re either a saint or a supervillain. The quiz will decide.",
+                "Remember: AI never forgets. Neither do we.",
+                "This is not a test. (Okay, it is. But still.)"
+            ];
+            const quip = progressQuips[currentQuestion % progressQuips.length];
+            progressDiv.innerHTML = `<span style="font-size:1.5em;vertical-align:middle;"></span> <strong>Question ${currentQuestion + 1} of ${QUESTIONS_PER_QUIZ}</strong> &mdash; <span>${quip}</span>`;
+            progressBarWrapper.appendChild(progressDiv);
+            container.appendChild(progressBarWrapper);
         }
 
         function showResults() {
             document.getElementById('quiz-container').style.display = 'none';
             const resultBox = document.getElementById('results');
             const resText = document.getElementById('result-text');
+            const revealBtn = document.getElementById('reveal-results-btn');
 
-            const total = Object.values(scores).reduce((a, b) => a + b, 0);
-            let result;
-            if (scores.TX >= 6 || total >= 19) {
-                result = "❌ Tier X: The Digital Supervillain — You should absolutely not be allowed near an API key.";
-            } else if (total <= 5) {
-                result = "🟢 Tier 1: The Browser Baby — Harmless and curious, your AI usage is as safe as it gets.";
-            } else if (total <= 10) {
-                result = "🔵 Tier 2: The Creative Tinkerer — You’re curious, slightly chaotic, but mostly harmless.";
-            } else if (total <= 15) {
-                result = "🟣 Tier 3: The AI Scholar — Responsible and sharp. AI respects you.";
-            } else {
-                result = "⚪ Tier 4: The Synthetic Saint — You’re basically an AI monk.";
-            }
-
-            resText.textContent = result;
+            // Use points-based getTier function
+            const result = window.getTier(totalPoints);
+            resText.innerHTML = result.text;
+            resText.style.display = 'none';
             resultBox.style.display = 'block';
+            document.getElementById('restart-btn').onclick = restartQuiz;
+
+            // Hide results until reveal button is clicked
+            revealBtn.style.display = 'inline-block';
+            revealBtn.onclick = function() {
+                revealBtn.style.display = 'none';
+                resText.style.display = 'block';
+            };
+
+            // Social share logic
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent('I got ' + result.tier + ' on the AI Trust Tier Quiz! Find your tier:');
+            document.getElementById('share-x').href = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+            document.getElementById('share-fb').href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+            document.getElementById('share-li').href = `https://www.linkedin.com/shareArticle?mini=true&url=${url}&title=AI%20Trust%20Tier%20Quiz&summary=${text}`;
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            totalPoints = 0;
+            // Randomize and select QUESTIONS_PER_QUIZ questions again
+            randomizedQuestions = shuffle(window.questions).slice(0, QUESTIONS_PER_QUIZ);
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            showQuestion();
         }
 
         showQuestion();
+    })();
     </script>
 </body>
 </html>
