@@ -52,9 +52,9 @@
         document.getElementById('start-btn').onclick = function() {
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('quiz-container').style.display = 'block';
-            // Randomize and select QUESTIONS_PER_QUIZ questions
             randomizedQuestions = shuffle(window.questions).slice(0, QUESTIONS_PER_QUIZ);
             currentQuestion = 0;
+            totalPoints = 0;
             showQuestion();
         };
 
@@ -187,8 +187,6 @@
             document.getElementById('quiz-container').style.display = 'block';
             showQuestion();
         }
-
-        showQuestion();
     })();
     </script>
 </body>
