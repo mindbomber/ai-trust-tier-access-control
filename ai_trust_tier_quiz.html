@@ -20,14 +20,14 @@
     <div id="quiz-container" style="display:none;"></div>
 
     <div class="results" id="results" style="display:none;" aria-live="polite">
-        <h2>Your Tier:</h2>
-        <button id="reveal-results-btn" title="Reveal your fate! (But remember: with great access comes great responsibility)">🔓 Reveal My AI Trust Tier (if you dare...)</button>
+        <h2 id="results-congrats"></h2>
+        <button id="reveal-results-btn" title="Reveal your fate! (But remember: with great access comes great responsibility)">🔓 Click here to reveal your access level and permissions (if you dare...)</button>
         <p id="result-text" style="display:none;"></p>
         <div id="ai-safety-message">
             🤔 <em>Remember: The real question isn’t just what you’d do with AI power—it’s who else might get the keys. In a world where one clever prompt can change everything, are we ready for the consequences of digital mischief? AI doesn’t judge, but maybe we should.</em>
         </div>
         <button id="restart-btn" 
-    title="Careful! Every retry brings you one step closer to being flagged for 'excessive optimism.' AI access is a privilege, not a right. 😉">
+            title="Careful! Every retry brings you one step closer to being flagged for 'excessive optimism.' AI access is a privilege, not a right. 😉">
             🤔 Try Again? See if you can convince the AI Overlords you deserve more access—or just confirm you’re a lovable liability!
         </button>
         <p><a href="https://github.com/mindbomber/ai-trust-tier-access-control/blob/main/WHITEPAPER.md" target="_blank">Learn about the real AI Trust Tier Framework (Whitepaper)</a></p>
@@ -155,6 +155,20 @@
             const resultBox = document.getElementById('results');
             const resText = document.getElementById('result-text');
             const revealBtn = document.getElementById('reveal-results-btn');
+            // Random quirky/sarcastic congrats messages
+            const congratsMessages = [
+                "Congrats, you finished the quiz without being flagged by Interpol — progress!",
+                "You’ve officially been judged by an algorithm — and somehow survived.",
+                "Well done, future overlord... or obedient spreadsheet user.",
+                "You passed! Depending on how low your standards are.",
+                "Congratulations — we now know exactly how dangerous you are.",
+                "Finished the quiz? Great. AI is printing your trust certificate on invisible paper.",
+                "You’ve been categorized, profiled, and possibly reported — cheers!",
+                "You did it! A questionable achievement, but an achievement nonetheless.",
+                "Big claps for completing a test that says you might be a threat to humanity.",
+                "That’s it. No prize. Just self-awareness and mild government scrutiny."
+            ];
+            document.getElementById('results-congrats').textContent = congratsMessages[Math.floor(Math.random() * congratsMessages.length)];
 
             // Use points-based getTier function
             const result = window.getTier(totalPoints);
