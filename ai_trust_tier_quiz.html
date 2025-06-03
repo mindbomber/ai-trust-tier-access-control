@@ -26,9 +26,11 @@
         <div id="ai-safety-message">
             🤔 <em>Remember: The real question isn’t just what you’d do with AI power—it’s who else might get the keys. In a world where one clever prompt can change everything, are we ready for the consequences of digital mischief? AI doesn’t judge, but maybe we should.</em>
         </div>
+        <div id="restart-warning" style="display:none; color:#b00; background:#fff3cd; border:1px solid #ffeeba; padding:1em; border-radius:8px; margin-bottom:1em; font-weight:bold; text-align:center;"></div>
         <button id="restart-btn" 
-            title="Careful! Every retry brings you one step closer to being flagged for 'excessive optimism.' AI access is a privilege, not a right. 😉">
-            ➡️ Try Again? See if you can convince the AI Overlords you deserve more access—or just confirm you’re a lovable liability!
+            title="Careful! Every retry brings you one step closer to being flagged for 'excessive optimism.' AI access is a privilege, not a right. 😉"
+            disabled>
+            ↩️ Try again? (The AI is still judging you)
         </button>
         <p><a href="https://github.com/mindbomber/ai-trust-tier-access-control/blob/main/WHITEPAPER.md" target="_blank">Learn about the real AI Trust Tier Framework (Whitepaper)</a></p>
         <div id="share-cta">
@@ -44,17 +46,24 @@
     <script src="results.js"></script>
     <script>
     (function() {
-        const QUESTIONS_PER_QUIZ = 7;
+        let questionsPerQuiz = 5;
         let currentQuestion = 0;
         let totalPoints = 0;
+        let randomizedQuestions = [];
+        let restartCount = 0;
+        let resultsRevealed = false;
 
-        // Show start screen, then quiz
+        // Use the starter set for the first run, then randomize from the full set on restart
         document.getElementById('start-btn').onclick = function() {
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('quiz-container').style.display = 'block';
-            randomizedQuestions = shuffle(window.questions).slice(0, QUESTIONS_PER_QUIZ);
+            questionsPerQuiz = 5;
+            restartCount = 0;
             currentQuestion = 0;
             totalPoints = 0;
+            // Use only the starter set for the first run, but select randomly
+            randomizedQuestions = shuffle(window.starterQuestions).slice(0, questionsPerQuiz);
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('results').style.display = 'none'; // Hide results if visible
             showQuestion();
         };
 
@@ -67,8 +76,6 @@
             }
             return arr;
         }
-
-        let randomizedQuestions = [];
 
         function showQuestion() {
             const container = document.getElementById('quiz-container');
@@ -118,7 +125,8 @@
             progressBar.style.height = '18px';
             const progressFill = document.createElement('div');
             progressFill.className = 'progress-bar-fill';
-            const percent = ((currentQuestion) / QUESTIONS_PER_QUIZ) * 100;
+            // Use questionsPerQuiz instead of QUESTIONS_PER_QUIZ
+            const percent = ((currentQuestion) / questionsPerQuiz) * 100;
             progressFill.style.width = percent + '%';
             progressFill.style.height = '100%';
             progressFill.style.background = 'linear-gradient(90deg, #4f8cff, #00e6e6)';
@@ -145,7 +153,7 @@
                 "This is not a test. (Okay, it is. But still.)"
             ];
             const quip = progressQuips[currentQuestion % progressQuips.length];
-            progressDiv.innerHTML = `<span style="font-size:1.5em;vertical-align:middle;"></span> <strong>Question ${currentQuestion + 1} of ${QUESTIONS_PER_QUIZ}</strong> &mdash; <span>${quip}</span>`;
+            progressDiv.innerHTML = `<span style="font-size:1.5em;vertical-align:middle;"></span> <strong>Question ${currentQuestion + 1} of ${questionsPerQuiz}</strong> &mdash; <span>${quip}</span>`;
             progressBarWrapper.appendChild(progressDiv);
             container.appendChild(progressBarWrapper);
         }
@@ -155,6 +163,10 @@
             const resultBox = document.getElementById('results');
             const resText = document.getElementById('result-text');
             const revealBtn = document.getElementById('reveal-results-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            resultsRevealed = false;
+            restartBtn.disabled = true; // Disable restart until results are revealed
+
             // Random quirky/sarcastic congrats messages
             const congratsMessages = [
                 "Congrats, you finished the quiz without being flagged by Interpol — progress!",
@@ -170,18 +182,52 @@
             ];
             document.getElementById('results-congrats').textContent = congratsMessages[Math.floor(Math.random() * congratsMessages.length)];
 
-            // Use points-based getTier function
-            const result = window.getTier(totalPoints);
+            // Use percentage-based getTier function
+            const maxPoints = questionsPerQuiz * 4;
+            const percent = totalPoints / maxPoints;
+            const result = window.getTier(percent); // Pass percent instead of totalPoints
             resText.innerHTML = result.text;
             resText.style.display = 'none';
             resultBox.style.display = 'block';
-            document.getElementById('restart-btn').onclick = restartQuiz;
 
             // Hide results until reveal button is clicked
             revealBtn.style.display = 'inline-block';
             revealBtn.onclick = function() {
                 revealBtn.style.display = 'none';
                 resText.style.display = 'block';
+                resultsRevealed = true;
+                restartBtn.disabled = false; // Enable restart now
+            };
+
+            // Quirky pop-up messages
+            const quirkyPopups = [
+                "Patience, human! The AI hasn't finished judging you yet.",
+                "You can't escape your fate that easily. Reveal your results first!",
+                "Nice try! Even AI needs closure before a restart.",
+                "First see your results, then you may try again. The suspense is part of the fun.",
+                "Whoa! The AI insists you face your digital destiny before another round.",
+                "Results first, existential crisis later.",
+                "Reveal your fate before you tempt it again!",
+                "The AI is still calculating your trustworthiness. Wait for it...",
+                "You must be judged before you can be redeemed. Click 'Reveal Results'!",
+                "No speedrunning the quiz! Results come before retries."
+            ];
+
+            // Always set restartBtn.enabled and attach the click handler
+            const warningDiv = document.getElementById('restart-warning');
+            warningDiv.style.display = 'none';
+            restartBtn.disabled = false; // Always enabled
+            restartBtn.onclick = function(e) {
+                if (!resultsRevealed) {
+                    const msg = quirkyPopups[Math.floor(Math.random() * quirkyPopups.length)];
+                    warningDiv.textContent = msg;
+                    warningDiv.style.display = 'block';
+                    setTimeout(() => { warningDiv.style.display = 'none'; }, 3500);
+                    e.preventDefault();
+                    return false;
+                }
+                warningDiv.style.display = 'none';
+                restartQuiz();
             };
 
             // Social share logic
@@ -192,11 +238,37 @@
             document.getElementById('share-li').href = `https://www.linkedin.com/shareArticle?mini=true&url=${url}&title=AI%20Trust%20Tier%20Quiz&summary=${text}`;
         }
 
+        function showFunnyScreen() {
+            const funnyMessages = [
+                "<span style='font-size:2em;'>🤖🚨</span><br><strong>AI Safety Alert:</strong> You've restarted this quiz more times than an AI ethics committee rewrites its guidelines. Maybe it's time to apply for a security clearance... or a nap!",
+                "<span style='font-size:2em;'>🛑🔐</span><br><strong>Access Denied:</strong> Your restart privileges are under review. Please step away from the keyboard and let the AI cool down.",
+                "<span style='font-size:2em;'>👀🤔</span><br><strong>Suspicious Activity Detected:</strong> Either you're a perfectionist or you're training for the AI Olympics. Either way, the robots are watching.",
+                "<span style='font-size:2em;'>💾🦾</span><br><strong>Quiz Overload:</strong> You've triggered the digital equivalent of a fire drill. Please proceed to the nearest exit (or just try Minesweeper).",
+                "<span style='font-size:2em;'>🧠🔒</span><br><strong>AI Trust Tier: Infinite Loop</strong><br>Congratulations, you have achieved the rare 'Quiz Addict' status. The AI is now questioning <em>your</em> access privileges!"
+            ];
+            const msg = funnyMessages[Math.floor(Math.random() * funnyMessages.length)];
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results-congrats').innerHTML = '';
+            document.getElementById('result-text').innerHTML = `<div style="text-align:center; font-size:1.25em; margin:2.5em auto; max-width:600px;">${msg}<br><br><button onclick='location.reload()' style='margin-top:2em; font-size:1.1em; padding:0.7em 2em; border-radius:8px; background:#4f8cff; color:#fff; border:none; cursor:pointer;'>🔄 Refresh Reality</button></div>`;
+            document.getElementById('result-text').style.display = 'block';
+            document.getElementById('reveal-results-btn').style.display = 'none';
+            document.getElementById('ai-safety-message').style.display = 'none';
+            document.getElementById('restart-btn').style.display = 'none';
+            document.getElementById('share-cta').style.display = 'none';
+        }
+
         function restartQuiz() {
+            restartCount++;
+            if (restartCount > 5) {
+                showFunnyScreen();
+                return;
+            }
+            questionsPerQuiz += 3;
             currentQuestion = 0;
             totalPoints = 0;
-            // Randomize and select QUESTIONS_PER_QUIZ questions again
-            randomizedQuestions = shuffle(window.questions).slice(0, QUESTIONS_PER_QUIZ);
+            // After first run, randomize from the full set
+            randomizedQuestions = shuffle(window.questions).slice(0, questionsPerQuiz);
             document.getElementById('results').style.display = 'none';
             document.getElementById('quiz-container').style.display = 'block';
             showQuestion();

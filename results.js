@@ -1,8 +1,8 @@
 // results.js
 // Exporting quiz result logic and descriptions for easier updates
 
-window.getTier = function(points) {
-  if (points >= 25) {
+window.getTier = function(percent) {
+  if (percent >= 0.9) {
     return {
       tier: "T4",
       text: `
@@ -18,7 +18,7 @@ window.getTier = function(points) {
       `
     };
   }
-  if (points >= 19) {
+  if (percent >= 0.7) {
     return {
       tier: "T3",
       text: `
@@ -34,7 +34,7 @@ window.getTier = function(points) {
       `
     };
   }
-  if (points >= 13) {
+  if (percent >= 0.5) {
     return {
       tier: "T2",
       text: `
@@ -50,7 +50,7 @@ window.getTier = function(points) {
       `
     };
   }
-  if (points >= 7) {
+  if (percent >= 0.25) {
     return {
       tier: "T1",
       text: `
@@ -66,7 +66,7 @@ window.getTier = function(points) {
       `
     };
   }
-  // 0–6 points
+  // < 25%
   return {
     tier: "TX",
     text: `
